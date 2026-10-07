@@ -28,8 +28,37 @@ def moving_platform_speed(index, total):
 
 
 def on_coin_collected(coin, score):
-    """Called the instant the player collects a coin, after its value has been added to the score. Add a sound or sparkle here."""
-    pass
+    """Attach a short sparkle burst and score popup to the collected coin."""
+    coin.effect = CoinEffect(coin.pos, score)
+
+
+class CoinEffect:
+    DURATION = 45
+
+    def __init__(self, pos, score):
+        self.origin = pygame.Vector2(pos)
+        self.score = score
+        self.life = self.DURATION
+        self.particles = [
+            [pygame.Vector2(pos), pygame.Vector2(2.5, 0).rotate(angle)]
+            for angle in range(0, 360, 30)
+        ]
+
+    def update(self):
+        self.life -= 1
+        for pos, velocity in self.particles:
+            pos += velocity
+            velocity.y += 0.06
+
+    def draw(self, screen, cam_y, font):
+        radius = max(1, round(3 * self.life / self.DURATION))
+        for pos, _ in self.particles:
+            pygame.draw.circle(screen, (255, 225, 100),
+                               (round(pos.x), round(pos.y - cam_y)), radius)
+        rise = (self.DURATION - self.life) * 0.6
+        popup = font.render(f"+50  Score: {self.score}", True, (255, 230, 130))
+        screen.blit(popup, popup.get_rect(center=(round(self.origin.x),
+                    round(self.origin.y - cam_y - 22 - rise))))
 
 
 class Platform:
@@ -59,6 +88,7 @@ class Coin:
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
         self.taken = False
+        self.effect = None
 
     def draw(self, screen, cam_y):
         pygame.draw.circle(screen, (250, 210, 60), (self.pos.x, self.pos.y - cam_y), COIN_R)
@@ -134,6 +164,7 @@ class Game:
     def reset(self):
         self.platforms = generate_platforms(60, HEIGHT - 40, WIDTH)
         self.coins = spawn_coins(self.platforms)
+        self.coin_effects = []
         self.player = Player(WIDTH // 2 - PLAYER_W // 2, HEIGHT - 100)
         self.cam_y = 0
         self.height = 0
@@ -149,6 +180,9 @@ class Game:
     def update(self, keys):
         if self.state != "play":
             return
+        for effect in self.coin_effects:
+            effect.update()
+        self.coin_effects = [effect for effect in self.coin_effects if effect.life > 0]
         self.player.move(keys)
         for plat in self.platforms:
             dx = plat.update()
@@ -171,6 +205,8 @@ class Game:
                 coin.taken = True
                 self.coin_score += 50
                 on_coin_collected(coin, self.score())
+                if coin.effect is not None:
+                    self.coin_effects.append(coin.effect)
         self.coins = [c for c in self.coins if not c.taken]
 
         if self.player.rect.top - self.cam_y > HEIGHT + 50:
@@ -191,6 +227,8 @@ class Game:
         for coin in self.coins:
             coin.draw(screen, self.cam_y)
         self.player.draw(screen, self.cam_y)
+        for effect in self.coin_effects:
+            effect.draw(screen, self.cam_y, self.font)
 
         hud = self.font.render(f"Height: {self.height}m  Coins: {self.coin_score // 50}  Lives: {self.lives}", True, (200, 200, 200))
         screen.blit(hud, (10, 10))
