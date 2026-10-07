@@ -20,8 +20,11 @@ def platform_color(index, total):
 
 
 def moving_platform_speed(index, total):
-    """Return a horizontal oscillation speed in pixels/frame for the platform at this index, or None/0 to keep it static."""
-    pass
+    """Move every third non-ground platform at 1-3 pixels per frame."""
+    if index <= 0 or index % 3:
+        return 0
+    progress = max(0.0, min(1.0, index / max(1, total)))
+    return 1 + int(2 * progress)
 
 
 def on_coin_collected(coin, score):
@@ -43,8 +46,10 @@ class Platform:
         if self.rect.x <= self.bounds[0] or self.rect.x >= self.bounds[1]:
             self.speed = -self.speed
             dx = self.speed
+        previous_x = self.rect.x
         self.rect.x = max(self.bounds[0], min(self.bounds[1], self.rect.x + dx))
-        return dx
+        # Carry riders by the actual distance, including a clipped boundary step.
+        return self.rect.x - previous_x
 
     def draw(self, screen, cam_y):
         pygame.draw.rect(screen, self.color, self.rect.move(0, -cam_y), border_radius=4)
