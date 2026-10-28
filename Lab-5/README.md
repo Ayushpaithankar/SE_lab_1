@@ -49,3 +49,25 @@ The code works, but only just. It has quality, style and security problems of th
 **Target:** aim for a Pylint score above 9.5 on your final file. A perfect 10.00/10 is very good.
 
 Be ready to explain the bugs you found and how you fixed them. You may be called on to present.
+
+## Completed Submission
+
+The cleaned implementation and all required evidence are included:
+
+- `hotel_booking_system.py` - corrected program.
+- `issues.md` - prioritized issue table and fix approaches.
+- `reflection.md` - four reflection answers.
+- `reports/before/` - original Pylint, Bandit, and Flake8 reports.
+- `reports/after/` - final reports (Pylint 10.00/10, zero Bandit findings,
+  and an empty Flake8 report indicating no violations).
+
+Run the final verification from the repository root:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install pylint bandit flake8
+.venv/bin/pylint hotel_booking_system.py
+.venv/bin/bandit -r hotel_booking_system.py
+.venv/bin/flake8 hotel_booking_system.py
+python3 hotel_booking_system.py
+```
