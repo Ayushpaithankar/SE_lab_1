@@ -15,6 +15,25 @@ coverage report -m warranty_claims.py
 
 The final terminal output is saved in `code_coverage_terminal.png`.
 
+## Branch coverage
+
+Run the dedicated branch-coverage test suite from this directory:
+
+```bash
+coverage erase
+coverage run --branch -m pytest BranchCoverageTest_warranty_claims_application.py
+coverage report -m warranty_claims.py
+```
+
+The final terminal output is saved in `branch_coverage_terminal.png`.
+
+## Final results
+
+| Analysis | Tests passed | Coverage |
+|---|---:|---:|
+| Code (statement) coverage | 15 | 100% |
+| Branch coverage | 20 | 100% |
+
 ## Requirements
 
 ```bash
